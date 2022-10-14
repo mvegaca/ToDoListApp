@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ToDoListApp.Views.TodoListView"
+             xmlns:viewModel="clr-namespace:ToDoListApp.ViewModels"
+             Title="TODO Items">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="TodoItemTemplate">
+            <ViewCell>
+                <ViewCell.ContextActions>
+                    <MenuItem
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewModel:TodoListViewModel}}, Path=MarkAsCompletedCommand}"
+                        CommandParameter="{Binding .}"
+                        Text="Mark as completed" />
+                    <MenuItem
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewModel:TodoListViewModel}}, Path=DeleteCommand}"
+                        CommandParameter="{Binding .}"
+                        Text="Delete" IsDestructive="True" />
+                </ViewCell.ContextActions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Grid.Column="0"
+                        Text="{Binding Name}"
+                        Margin="12,24,0,24"
+                        VerticalOptions="Center"
+                        Style="{DynamicResource SubtitleTextStyle}" />
+                    <Image
+                        Grid.Column="1"
+                        Margin="12,24,24,24"
+                        Source="check.png"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center" />
+                </Grid>
+            </ViewCell>
+        </DataTemplate>
+    </ContentPage.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListView
+            Margin="12"
+            SelectionMode="Single"
+            ItemsSource="{Binding TodoItems}"
+            ItemTemplate="{StaticResource TodoItemTemplate}" />
+        <Button
+            Grid.Row="1"
+            Margin="12"
+            Text="Create a new TODO"
+            Command="{Binding AddItemCommand}" />
+    </Grid>
+</ContentPage>
