@@ -11,5 +11,6 @@ public partial class TodoCreateView : ContentPage
         _viewModel = viewModel;
         this.BindingContext = _viewModel;
         InitializeComponent();
+        viewModel.Initialize(this);
 	}
 }

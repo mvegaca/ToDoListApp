@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ToDoListApp.Views.TodoCreateView"
-             Title="Create a new TODO">
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="ToDoListApp.Views.TodoCreateView"
+    xmlns:resources="clr-namespace:ToDoListApp.Resources"
+    Title="{x:Static resources:Resources.TodoCreateViewTitle}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Label
+            Margin="12,12,0,12"
+            Text="{x:Static resources:Resources.NameEntryText}" />
+        <Entry            
+            Grid.Row="1"
+            x:Name="nameEntry"
+            Margin="12,0,12,0"
+            Placeholder="{x:Static resources:Resources.NameEntryPlaceholder}"
+            VerticalTextAlignment="Start"            
+            ReturnType="Done"
+            ReturnCommand="{Binding SubmmitCommand}"
+            ReturnCommandParameter="Hola"
+            Text="{Binding Name, Mode=TwoWay, UpdateSourceEventName=TextChanged}" />
+        <Button
+            Grid.Row="2"
+            Margin="12"
+            Style="{StaticResource BaseButtonStyle}"
+            Text="{x:Static resources:Resources.SubmmitButtonText}"
+            Command="{Binding SubmmitCommand}" />
+    </Grid>
 </ContentPage>

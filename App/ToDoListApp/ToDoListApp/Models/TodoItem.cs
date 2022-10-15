@@ -1,9 +1,29 @@
-﻿namespace ToDoListApp.Models
+﻿using ToDoListApp.ViewModels;
+
+namespace ToDoListApp.Models
 {
-    public class TodoItem
+    public class TodoItem : Observable
     {
-        public string Key { get; set; }
-        public string Name { get; set; }
-        public bool IsComplete { get; set; }
+        private string _key;
+        private string _name;
+        private bool _isComplete;
+
+        public string Key
+        {
+            get => _key;
+            set => SetProperty(ref _key, value);
+        }
+
+        public string Name
+        {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        public bool IsComplete
+        {
+            get => _isComplete;
+            set => SetProperty(ref _isComplete, value);
+        }
     }
 }

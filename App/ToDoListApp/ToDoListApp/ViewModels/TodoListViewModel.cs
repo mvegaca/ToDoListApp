@@ -9,6 +9,7 @@ namespace ToDoListApp.ViewModels
     public class TodoListViewModel : ViewModelBase
     {
         private readonly IDataService _dataService;
+        private readonly IPopUpService _popUpService;
         private ObservableCollection<TodoItem> _todoItems;
         public ObservableCollection<TodoItem> TodoItems
         {
@@ -17,24 +18,32 @@ namespace ToDoListApp.ViewModels
         }
 
         private ICommand _addItemCommand;
-        private ICommand _markAsCompletedCommand;
+        private ICommand _isCompleteCommand;
         private ICommand _deleteCommand;
+        private ICommand _refreshCommand;
         public ICommand AddItemCommand => _addItemCommand ?? (_addItemCommand = new Command(OnAddItem, (obj) => !IsBusy));
 
-        public ICommand MarkAsCompletedCommand => _markAsCompletedCommand ?? (_markAsCompletedCommand = new Command(OnMarkAsCompleted, (obj) => !IsBusy));
+        public ICommand IsCompleteCommand => _isCompleteCommand ?? (_isCompleteCommand = new Command(OnUpdateIsComplete, (obj) => !IsBusy));        
 
-        public ICommand DeleteCommand => _deleteCommand ?? (_deleteCommand = new Command(OnDelete, (obj) => !IsBusy));        
+        public ICommand DeleteCommand => _deleteCommand ?? (_deleteCommand = new Command(OnDelete, (obj) => !IsBusy));
 
-        public TodoListViewModel(IDataService dataService)
+        public ICommand RefreshCommand => _refreshCommand ?? (_refreshCommand = new Command(OnRefresh, (obj) => !IsBusy));
+
+        public TodoListViewModel(IDataService dataService, IPopUpService popUpService)
         {
             _dataService = dataService;
+            _popUpService = popUpService;
         }
 
-        public async Task LoadDataAsync()
+        public override async Task LoadDataAsync()
         {
             IsBusy = true;
-            var data = await _dataService.RefreshDataAsync();
-            if (data != null)
+            var data = await _dataService.GetAllItemsAsync();
+            if (data == null)
+            {
+                _popUpService.DisplayAlert(Resources.Resources.TodoListViewTitle, Resources.Resources.PopUpMessageApiNoAvailable, Resources.Resources.PopUpOkButton);
+            }
+            else
             {
                 TodoItems = new ObservableCollection<TodoItem>(data);
             }
@@ -42,12 +51,19 @@ namespace ToDoListApp.ViewModels
             IsBusy = false;
         }
 
+        public override void Initialize(Page page)
+        {
+            base.Initialize(page);
+            _popUpService.Initialize(page);
+        }
+
         protected override void RefreshBusyCommands()
         {
             base.RefreshBusyCommands();
             (AddItemCommand as Command).ChangeCanExecute();
-            (MarkAsCompletedCommand as Command).ChangeCanExecute();
+            (IsCompleteCommand as Command).ChangeCanExecute();
             (DeleteCommand as Command).ChangeCanExecute();
+            (RefreshCommand as Command).ChangeCanExecute();
         }
 
         private async void OnAddItem(object obj)
@@ -57,20 +73,39 @@ namespace ToDoListApp.ViewModels
             IsBusy = false;
         }
 
-        private void OnMarkAsCompleted(object obj)
+        private void OnUpdateIsComplete(object obj)
         {
             if (obj is TodoItem todoItem)
             {
-
+                IsBusy = true;
+                todoItem.IsComplete = !todoItem.IsComplete;
+                _dataService.SendItemAsync(todoItem, false);
+                IsBusy = false;
             }
         }
 
-        private void OnDelete(object obj)
+        private async void OnDelete(object obj)
         {
+            IsBusy = true;
             if (obj is TodoItem todoItem)
             {
-
+                var success = await _dataService.DeleteItemAsync(todoItem.Key);
+                if (success)
+                {
+                    var message = string.Format(Resources.Resources.PopUpMessageItemDeleted, todoItem.Name);
+                    _popUpService.DisplayAlert(Resources.Resources.TodoListViewTitle, message, Resources.Resources.PopUpOkButton);
+                    TodoItems.Remove(todoItem);
+                }
             }
+            IsBusy = false;
+        }
+
+        private async void OnRefresh(object obj)
+        {
+            IsBusy = true;
+            var data = await _dataService.GetAllItemsAsync();
+            TodoItems = new ObservableCollection<TodoItem>(data);
+            IsBusy = false;
         }
     }
 }
